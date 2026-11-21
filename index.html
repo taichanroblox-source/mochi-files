@@ -1,11 +1,56 @@
 <!DOCTYPE html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f1e8"><title>mochi-files | ファイルを、もっと自由に。</title><link rel="stylesheet" href="/style.css"><script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script><script defer src="/app.js"></script></head>
 <body><aside class="side"><div class="logo"><span class="brand-icon" data-icon="files"></span> <b>mochi-files</b><small>ファイルを、もっと自由に。</small></div><nav id="desktop-nav"></nav><div class="sidefoot">● この端末に保存</div></aside><main><header><div><small>YOUR FILE WORKSPACE</small><h1 id="heading">ホーム</h1></div><button class="primary add">＋ ファイルを追加</button></header>
-<section id="home" class="page active"><div class="hero"><div class="eyebrow">WELCOME TO MOCHI-FILES</div><h2>ファイルのこと、<br>ここで全部。</h2><p>変換も、圧縮も、整理も。もちのようにやさしいファイルツール。</p><button class="primary add">＋ ファイルを追加</button><div class="hero-symbol"><span data-icon="files"></span></div></div><h2 class="sectitle">ツールを使う</h2><div class="tiles"><button data-go="scratch"><span class="tile-icon" data-icon="download"></span><b>Scratchダウンロード</b><small>作品からSB3を保存</small></button><button data-go="convert"><span class="tile-icon" data-icon="refresh"></span><b>ファイル変換</b><small>画像・動画・音声</small></button><button data-go="zip"><span class="tile-icon" data-icon="archive"></span><b>ZIPツール</b><small>圧縮と解凍</small></button><button data-go="share"><span class="tile-icon" data-icon="share"></span><b>ファイル共有</b><small>デバイス間の転送</small></button></div><h2 class="sectitle">最近のファイル</h2><div id="recent-list" class="file-list"></div></section>
+<section id="home" class="page active"><div class="hero"><div class="eyebrow">WELCOME TO MOCHI-FILES</div><h2>ファイルのこと、<br>ここで全部。</h2><p>変換も、圧縮も、整理も。もちのようにやさしいファイルツール。</p><button class="primary add">＋ ファイルを追加</button><div class="hero-symbol"><span data-icon="files"></span></div></div><h2 class="sectitle">ツールを使う</h2><div class="tiles"><button data-go="scratch"><span class="tile-icon" data-icon="download"></span><b>Scratchダウンロード</b><small>作品からSB3を保存</small></button><button data-go="convert"><span class="tile-icon" data-icon="refresh"></span><b>ファイル変換</b><small>画像・動画・音声</small></button><button data-go="zip"><span class="tile-icon" data-icon="archive"></span><b>ZIPツール</b><small>圧縮と解凍</small></button><button data-go="share"><span class="tile-icon" data-icon="mochi-share"></span><b>ファイル共有</b><small>デバイス間の転送</small></button></div><h2 class="sectitle">最近のファイル</h2><div id="recent-list" class="file-list"></div></section>
 <section id="files" class="page"><h2>マイファイル</h2><p>このブラウザに保存したファイルを整理しよう。</p><div class="filters"><input id="search" placeholder="ファイル名・タグで検索"><select id="filter"><option value="all">すべて</option><option value="favorite">お気に入り</option></select><select id="sort"><option value="date">新しい順</option><option value="name">名前順</option><option value="size">サイズ順</option></select></div><div id="file-list" class="file-list"></div><p class="note">ブラウザのデータを削除すると保存したファイルも消える場合があるよ。大切なファイルは端末にもダウンロードしてね。</p></section>
 <section id="scratch" class="page"><h2>Scratchダウンロード</h2><p>公開作品のURLを1行に1つ入力してね。</p><div class="panel"><label>作品URL</label><textarea id="scratch-urls" rows="4" placeholder="https://scratch.mit.edu/projects/123456789/"></textarea><button id="scratch-check" class="primary">作品情報を取得</button><div id="scratch-results"></div><p class="note">公開されている作品のみ取得可能。Scratch側の制限で取得できない場合があるよ。</p></div></section>
 <section id="convert" class="page"><h2>ファイル変換</h2><p>画像変換を先行実装。動画・音声は今後追加するよ。</p><div class="panel"><label>画像を選択</label><input id="image-input" type="file" accept="image/*"><label>変換後の形式</label><select id="image-format"><option value="png">PNG</option><option value="jpeg">JPG</option><option value="webp">WebP</option></select><button class="primary" id="convert-btn">変換してダウンロード</button><p id="convert-status" class="note"></p></div></section>
 <section id="zip" class="page"><h2>ZIPツール</h2><p>ファイルをまとめたり、ZIPから取り出したり。</p><div class="dual"><div class="panel"><h3>ZIP圧縮</h3><label>ファイル</label><input type="file" multiple id="zip-input"><label>フォルダ（対応ブラウザのみ）</label><input type="file" webkitdirectory multiple id="zip-folder"><label>ファイル名</label><input id="zip-name" value="mochi-files"><label>圧縮レベル</label><select id="zip-level"><option value="1">高速</option><option value="6" selected>標準</option><option value="9">最大圧縮</option></select><button id="zip-btn" class="primary">ZIPを作成</button><p id="zip-status" class="note"></p></div><div class="panel"><h3>ZIP解凍</h3><label>ZIPファイル</label><input type="file" id="unzip-input" accept=".zip"><div id="unzip-entries"></div></div></div></section>
-<section id="share" class="page"><div class="radar-screen"><div class="radar-rings" aria-hidden="true"></div><div class="radar-heading"><h2>ファイルを共有するには、もう一台のデバイスでmochi-filesを開こう</h2><p>共有をオンにしたデバイスを検出してファイルを送信できます</p></div><div id="share-peers" class="radar-peers" aria-label="見つかったデバイス"></div><div class="radar-self"><div class="radar-beacon" aria-hidden="true"><svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"><circle cx="50" cy="50" r="9" fill="currentColor" stroke="none"/><path d="M35 70a25 25 0 1 1 30 0M25 82a40 40 0 1 1 50 0"/><path d="M50 62 37 86M50 62l13 24"/></svg></div><div class="radar-device-label">このデバイスの名前： <strong id="share-display-name">わたしのデバイス</strong><button id="share-edit-name" aria-label="デバイス名を編集" title="デバイス名を編集">✎</button></div><div class="radar-network">検出範囲：<span>このサービスで共有をオンにした端末</span></div><button id="share-toggle" class="radar-toggle">共有をオンにする</button><p id="share-status" role="status">オフライン</p><p id="share-progress" role="status"></p></div><input id="share-name" maxlength="40" hidden><input id="share-files" type="file" multiple hidden><div class="radar-modal" id="share-incoming" hidden><div class="radar-dialog"><h3>ファイルの受信リクエスト</h3><p id="share-request-text"></p><div class="radar-dialog-actions"><button id="share-reject">拒否する</button><button id="share-accept">受け取る</button></div></div></div></div></section>
+<section id="share" class="page">
+  <div class="share-layout">
+    <section class="share-device" aria-labelledby="share-device-heading">
+      <div class="share-device-art" data-icon="mochi-device"></div>
+      <div class="share-identity">
+        <h2 id="share-device-heading">この端末</h2>
+        <div class="share-name-row">
+          <strong id="share-display-name">わたしのデバイス</strong>
+          <button type="button" id="share-edit-name" class="share-edit">
+            <span data-icon="mochi-edit"></span>名前を変更
+          </button>
+        </div>
+        <p id="share-status" role="status">オフライン</p>
+      </div>
+      <button type="button" id="share-toggle" class="primary">共有をオンにする</button>
+    </section>
+
+    <div class="share-notices">
+      <section id="share-incoming" aria-labelledby="share-request-heading" hidden>
+        <span class="share-icon" data-icon="mochi-receive"></span>
+        <div>
+          <h3 id="share-request-heading">ファイルの受信リクエスト</h3>
+          <p id="share-request-text"></p>
+          <div class="share-request-actions">
+            <button type="button" id="share-reject" class="share-edit">拒否する</button>
+            <button type="button" id="share-accept" class="primary">受け取る</button>
+          </div>
+        </div>
+      </section>
+      <p id="share-progress" role="status"></p>
+    </div>
+
+    <section class="share-destinations" aria-labelledby="share-destinations-heading">
+      <h2 id="share-destinations-heading">送信先のデバイス</h2>
+      <p>このサービスで共有をオンにした端末を選ぶと、ファイルを送れます。</p>
+      <div id="share-peers" class="share-peers"></div>
+      <div class="share-empty">
+        <span class="share-icon" data-icon="mochi-share"></span>
+        <strong>送信先のデバイスはまだありません</strong>
+        <p>送受信する両方の端末でmochi-filesを開き、共有をオンにしてください。</p>
+      </div>
+    </section>
+  </div>
+  <input id="share-name" maxlength="40" hidden>
+  <input id="share-files" type="file" multiple hidden>
+</section>
 <section id="settings" class="page"><h2>設定</h2><div class="panel"><h3>保存について</h3><p>ファイルはこのブラウザのIndexedDBに保存されるよ。</p><p id="usage">保存容量を確認中...</p><label>デバイス名（共有機能用）</label><input id="device-name" placeholder="例：わたしのiMac"><button class="primary" id="device-save">保存</button></div></section>
 </main><nav id="mobile-nav" class="mobile-nav"></nav><input type="file" id="add-input" multiple hidden><div id="toast" role="status" aria-live="polite"></div></body></html>
