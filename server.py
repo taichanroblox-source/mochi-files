@@ -4,11 +4,15 @@ import json
 import os
 import re
 import zipfile
+import secrets
+import threading
+import time
+from collections import deque
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import quote
 
 import requests
-from flask import Flask, jsonify, send_file, send_from_directory
+from flask import Flask, jsonify, request, send_file, send_from_directory
 
 app = Flask(__name__, static_folder=None)
 ROOT = os.path.dirname(__file__)
@@ -41,6 +45,88 @@ def public_meta(pid):
     response = session.get("https://api.scratch.mit.edu/projects/" + str(pid), timeout=15)
     response.raise_for_status()
     return response.json()
+
+
+
+# Ephemeral discovery and WebRTC signaling. No file bytes are stored here.
+PEERS = {}
+PEER_LOCK = threading.Lock()
+PEER_TTL = 35
+
+
+def prune_peers():
+    now = time.time()
+    for key in list(PEERS):
+        if now - PEERS[key]["seen"] > PEER_TTL:
+            del PEERS[key]
+
+
+@app.post("/api/share/register")
+def share_register():
+    data = request.get_json(silent=True) or {}
+    name = str(data.get("name", "デバイス")).strip()[:40] or "デバイス"
+    with PEER_LOCK:
+        prune_peers()
+        if len(PEERS) >= 100:
+            return jsonify(error="接続数の上限です"), 429
+        token = secrets.token_urlsafe(32)
+        PEERS[token] = {"name": name, "seen": time.time(), "queue": deque(maxlen=150)}
+    return jsonify(token=token)
+
+
+@app.post("/api/share/heartbeat")
+def share_heartbeat():
+    data = request.get_json(silent=True) or {}
+    token = data.get("token")
+    with PEER_LOCK:
+        prune_peers()
+        if token not in PEERS:
+            return jsonify(error="接続が終了しました"), 401
+        PEERS[token]["seen"] = time.time()
+        return jsonify(peers=[
+            {"id": key, "name": value["name"]}
+            for key, value in PEERS.items() if key != token
+        ])
+
+
+@app.post("/api/share/events")
+def share_events():
+    data = request.get_json(silent=True) or {}
+    token = data.get("token")
+    with PEER_LOCK:
+        prune_peers()
+        if token not in PEERS:
+            return jsonify(error="接続が終了しました"), 401
+        peer = PEERS[token]
+        peer["seen"] = time.time()
+        events = list(peer["queue"])
+        peer["queue"].clear()
+    return jsonify(events=events)
+
+
+@app.post("/api/share/signal")
+def share_signal():
+    data = request.get_json(silent=True) or {}
+    sender, recipient = data.get("token"), data.get("to")
+    event = data.get("event")
+    if not isinstance(event, dict) or len(json.dumps(event)) > 16000:
+        return jsonify(error="不正な信号です"), 400
+    if event.get("type") not in ("request", "accept", "reject", "offer", "answer", "ice", "cancel"):
+        return jsonify(error="不正なイベントです"), 400
+    with PEER_LOCK:
+        prune_peers()
+        if sender not in PEERS or recipient not in PEERS or sender == recipient:
+            return jsonify(error="送信先が見つかりません"), 404
+        PEERS[recipient]["queue"].append({"from": sender, "name": PEERS[sender]["name"], "event": event})
+    return jsonify(ok=True)
+
+
+@app.post("/api/share/leave")
+def share_leave():
+    token = (request.get_json(silent=True) or {}).get("token")
+    with PEER_LOCK:
+        PEERS.pop(token, None)
+    return jsonify(ok=True)
 
 
 @app.get("/")
